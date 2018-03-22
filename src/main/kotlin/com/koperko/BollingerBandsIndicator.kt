@@ -2,6 +2,7 @@ package com.koperko
 
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation
 import org.jfree.data.xy.XYSeries
+import java.util.*
 
 class BollingerBandsIndicator(private val lowerFactor: Double, private val upperFactor: Double, private val lookBackPeriod: Int) : Indicator {
 

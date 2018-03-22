@@ -19,8 +19,6 @@ import java.nio.file.Paths
 import java.text.DateFormat
 import java.text.ParseException
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 import java.util.Locale
 import java.text.SimpleDateFormat
 
@@ -32,9 +30,9 @@ val data: MutableMap<String, MutableList<LogEvent>> = HashMap()
 fun main(arg: Array<String>) {
     val server = embeddedServer(Netty, 8080) {
         routing {
-            get("/") {
-                call.respondText("Hey there..", ContentType.Text.Html)
-            }
+//            get("/") {
+//                call.respondText("Hey there..", ContentType.Text.Html)
+//            }
         }
     }
 
