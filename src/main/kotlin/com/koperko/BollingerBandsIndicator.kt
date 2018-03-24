@@ -4,7 +4,7 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation
 import org.jfree.data.xy.XYSeries
 import java.util.*
 
-class BollingerBandsIndicator(private val lowerFactor: Double, private val upperFactor: Double, private val lookBackPeriod: Int) : Indicator {
+class BollingerBandsIndicator(private val lowerFactor: Double, private val upperFactor: Double, private val lookBackPeriod: Int, private val stopLossPercentage: Double) : Indicator {
 
 
     object Math {
@@ -95,7 +95,7 @@ class BollingerBandsIndicator(private val lowerFactor: Double, private val upper
                 Position.SELL -> historyPoints[openTradeIndex] / historyPoints.last()
                 else -> throw RuntimeException("No position is open at the moment")
             }
-            return coefficient < 0.95
+            return coefficient < 1 - stopLossPercentage
         }
         return false
     }
