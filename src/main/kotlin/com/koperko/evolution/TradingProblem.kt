@@ -23,17 +23,18 @@ class TradingProblem : Problem<ISeq<Double>, DoubleGene, Double> {
 
     override fun fitness(): Function<ISeq<Double>, Double> {
         return Function { genotype ->
-            val evaluator = EvaluatorImpl(SimulatedMarket(File("src/main/resources/bitcoin-lite.csv")))
-            return@Function evaluator.evaluate(TraderImpl(TradingParameters(genotype)))
+            val evaluator = WeeklyBalanceEvaluator(SimulatedMarket(File("src/main/resources/bitcoin-lite.csv")), 0.04)
+            val value = evaluator.evaluate(TraderImpl(TradingParameters(genotype)))
                     .subscribeOn(Schedulers.computation())
                     .onErrorResumeNext {
                         if (it is NoSuchElementException) {
-                            Single.just(EvaluationResult(0.0))
+                            Single.just(0.0)
                         } else {
                             Single.error(it)
                         }
                     }
-                    .blockingGet().balance
+                    .blockingGet()
+            return@Function value
         }
     }
 

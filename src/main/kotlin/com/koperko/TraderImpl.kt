@@ -23,10 +23,12 @@ import java.util.Date
 class TraderImpl(override var parameters: TradingParameters) : Trader  {
 
     companion object {
-        const val CANDLE_PERIOD_MS = 24 * 60 * 60 * 1000
+        const val CANDLE_PERIOD_MS = 24 * 60 * 60 * 1000L
+        const val WEEK_IN_MS = 7 * 24 * 3600 * 1000L
+        const val MONTH_IN_MS = 30 * 24 * 3600 * 1000L
     }
 
-    private var balanceChangeSubject = PublishSubject.create<BalanceChange>()
+    private var marketEventsSubject = PublishSubject.create<MarketEvent>()
 
     private val marketSubscriptions = CompositeDisposable()
 
@@ -55,6 +57,9 @@ class TraderImpl(override var parameters: TradingParameters) : Trader  {
     var firstOpenPrice = 0.0
 
     var lastCloseTimestamp = 0L
+
+    var lastWeekTimestamp = 0L
+    var lastMonthTimestamp = 0L
 
     override fun onPriceChange(priceChange: PriceChangeEvent) {
         val (created, price) = priceChange
@@ -97,15 +102,24 @@ class TraderImpl(override var parameters: TradingParameters) : Trader  {
             }
         }
         testSeries.add(createdDouble, price)
+
+        if (priceChange.timestamp.time - lastWeekTimestamp > WEEK_IN_MS) {
+            marketEventsSubject.onNext(MarketEvent.NewWeek)
+            lastWeekTimestamp = priceChange.timestamp.time
+        }
+        if (priceChange.timestamp.time - lastMonthTimestamp > MONTH_IN_MS) {
+            marketEventsSubject.onNext(MarketEvent.NewMonth)
+            lastMonthTimestamp = priceChange.timestamp.time
+        }
     }
 
 
-    override fun startTrading(market: Market) : Observable<BalanceChange> {
+    override fun startTrading(market: Market) : Observable<MarketEvent> {
 //        System.out.println("Testing started with balance $balance")
 //        System.out.println("${Date()}")
 
         marketSubscriptions.add(market.subscribe(this))
-        return balanceChangeSubject
+        return marketEventsSubject
     }
 
     override fun stopTrading() {
@@ -139,8 +153,8 @@ class TraderImpl(override var parameters: TradingParameters) : Trader  {
     }
 
     private fun resetBalanceChangeSubject() {
-        balanceChangeSubject.onComplete()
-        balanceChangeSubject = PublishSubject.create()
+        marketEventsSubject.onComplete()
+        marketEventsSubject = PublishSubject.create()
     }
 
     private fun updateBalance(closingPrice: Double) : Double {
@@ -149,10 +163,10 @@ class TraderImpl(override var parameters: TradingParameters) : Trader  {
             Position.BUY -> closingPrice / openPrice
             Position.SELL -> openPrice / closingPrice
             else -> throw RuntimeException("Trying to update balance when no position is open at the moment")
-        } * 0.999
+        } * 0.97
 
         balance *= coefficient
-        balanceChangeSubject.onNext(BalanceChange(oldBalance, balance))
+        marketEventsSubject.onNext(MarketEvent.BalanceChange(oldBalance, balance))
         val tradeProfit = (coefficient * 100) - 100
 //        System.out.println("New balance: ${balance.toInt()}\t, closed a trade with  \t \t ${if(tradeProfit>0) "   +" else ""}${"%.3f".format(tradeProfit)}")
         return coefficient
@@ -182,7 +196,6 @@ class TraderImpl(override var parameters: TradingParameters) : Trader  {
             if (currentHigh < priceChange.price) currentHigh = priceChange.price
             if (currentLow > priceChange.price) currentLow = priceChange.price
         }
-
     }
 
 }

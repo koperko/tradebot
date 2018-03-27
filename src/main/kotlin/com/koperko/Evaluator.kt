@@ -10,12 +10,6 @@ interface Evaluator {
     /**
      * Evaluates the performance of given trader
      */
-    fun evaluate(trader: Trader) : Single<EvaluationResult>
+    fun evaluate(trader: Trader) : Single<Double>
 
 }
-
-
-/**
- * Result of trader evaluation by @{link Evaluator}
- */
-data class EvaluationResult(val balance: Double)

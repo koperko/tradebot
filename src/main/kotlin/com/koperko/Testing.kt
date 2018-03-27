@@ -50,13 +50,19 @@ fun Double.isInRange(min: Double, max: Double): Boolean {
 fun main(args: Array<String>) {
 
 //    val market: Market = SimulatedMarket(File("src/main/resources/bitcoin-lite.csv"))
-//    val trader: Trader = TraderImpl(TradingParameters(2.0, 2.0, 1200.0, 0.03))
+//    val trader: Trader = TraderImpl(TradingParameters(0.04299748953891125, 0.17878435004074766, 27.725265442748604, 0.0054511954340837115))
 //
-//    trader.startTrading(market)
+//    val balance = trader.startTrading(market)
+//            .filter { it is MarketEvent.BalanceChange }
+//            .map { it as MarketEvent.BalanceChange }
+//            .last(MarketEvent.BalanceChange(-1.0, -1.0))
+//            .blockingGet()
+//
+//    System.out.println("Testing finished with balance ${balance.newBalance}")
 
     val engine = Engine.builder(TradingProblem())
             .maximizing()
-            .populationSize(20)
+            .populationSize(100)
             .build()
 
     val statistics = EvolutionStatistics.ofNumber<Double>()
@@ -66,7 +72,7 @@ fun main(args: Array<String>) {
             .limit(50)
             .stream()
             .peek(statistics)
-            .peek { System.out.println("Best trader in generation ${it.generation} balance: ${"%.2f".format(it.bestFitness)} \t (${it.bestPhenotype.genotype}") }
+            .peek { System.out.println("Best trader in generation ${it.generation} balance: ${"%.4f".format(it.bestFitness)} \t (${it.bestPhenotype.genotype}") }
             .collect(EvolutionResult.toBestPhenotype<DoubleGene, Double>())
 
     System.out.print(statistics)

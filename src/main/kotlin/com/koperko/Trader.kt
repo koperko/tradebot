@@ -14,7 +14,7 @@ interface Trader : PriceChangeListener {
      *  Returns observable that instructs this trader to start trading upon subscribing
      *  and emits any balance changes
      */
-    fun startTrading(market: Market) : Observable<BalanceChange>
+    fun startTrading(market: Market) : Observable<MarketEvent>
     fun stopTrading()
     fun getCurrentBalance() : Double
 
@@ -27,4 +27,12 @@ data class TradingParameters(val BBUpperFactor: Double, val BBLowerFactor: Doubl
     }
 
 }
-data class BalanceChange(val oldBalance: Double, val newBalance: Double)
+
+sealed class MarketEvent {
+
+    class BalanceChange(val oldBalance: Double, val newBalance: Double) : MarketEvent()
+
+    object NewWeek : MarketEvent()
+    object NewMonth : MarketEvent()
+
+}
