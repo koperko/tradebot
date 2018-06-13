@@ -9,6 +9,8 @@ import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
 import java.io.File
 import java.io.FileReader
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -26,8 +28,10 @@ class SimulatedMarket(val csvFile: File) : Market {
 
     private fun createDataObservable() : Observable<PriceChangeEvent> {
         if (data == null) data = CSVParser(FileReader(csvFile), CSVFormat.DEFAULT).records
+        val formatter = SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS")
         return Observable.fromIterable(data)
-                .map { PriceChangeEvent(Date(it[0].toLong() * 1000), it[4].toDouble()) }
+//                .map { PriceChangeEvent(Date(it[0].toLong() * 1000), it[4].toDouble(), it[4].toDouble()) }
+                .map { PriceChangeEvent(formatter.parse(it[1]), it[2].toDouble(), it[3].toDouble()) }
                 .subscribeOn(Schedulers.computation())
     }
 

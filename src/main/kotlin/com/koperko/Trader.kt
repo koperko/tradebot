@@ -8,6 +8,7 @@ import io.reactivex.Observable
  */
 interface Trader : PriceChangeListener {
 
+    var indicators: List<Indicator>
     var parameters: TradingParameters
 
     /**
@@ -20,9 +21,9 @@ interface Trader : PriceChangeListener {
 
 }
 
-data class TradingParameters(val BBUpperFactor: Double, val BBLowerFactor: Double, val BBLookBackPeriod: Double, val BBStopLoss: Double){
+data class TradingParameters(val stopLoss: Double, val takeProfit: Double, val BBUpperFactor: Double, val BBLowerFactor: Double, val BBLookBackPeriod: Double){
 
-    constructor(genotype: ISeq<Double>) : this(genotype[0], genotype[1], genotype[2], genotype[3]) {
+    constructor(genotype: ISeq<Double>) : this(genotype[0], genotype[1], genotype[2], genotype[3], genotype[4]) {
 
     }
 

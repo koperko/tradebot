@@ -1,5 +1,11 @@
 package com.koperko
 
+import com.jfx.MT4
+import com.jfx.TickInfo
+import com.jfx.strategy.Strategy
+import com.koperko.environment.Position
+import com.koperko.environment.TradingEnvironment
+import com.koperko.extensions.averageWith
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
@@ -20,7 +26,8 @@ import java.util.Date
  * Created by Matus on 20.03.2018.
  */
 
-class TraderImpl(override var parameters: TradingParameters) : Trader  {
+class TraderImpl(override var indicators: List<Indicator>, override var parameters: TradingParameters,
+                 private val tradingEnvironment: TradingEnvironment) : Trader, Strategy.TickListener  {
 
     companion object {
         const val CANDLE_PERIOD_MS = 24 * 60 * 60 * 1000L
@@ -32,24 +39,24 @@ class TraderImpl(override var parameters: TradingParameters) : Trader  {
 
     private val marketSubscriptions = CompositeDisposable()
 
-    private val indicators = ArrayList<Indicator>(Arrays.asList(
-            BollingerBandsIndicator(parameters.BBLowerFactor, parameters.BBUpperFactor, parameters.BBLookBackPeriod.toInt(), parameters.BBStopLoss)
-    ))
+//    private val indicators = ArrayList<Indicator>(Arrays.asList(
+//            BollingerBandsIndicator(parameters.BBLowerFactor, parameters.BBUpperFactor, parameters.BBLookBackPeriod.toInt(), parameters.stopLoss)
+//    ))
 
-    private var position = Position.NONE
-    private var openPrice = 0.0
-    private var balance = 10000.0
+//    private var position = Position.NONE
+//    private var openPrice = 0.0
+//    private var balance = 10000.0
 
-    val dataset = XYSeriesCollection()
-    val testSeries = XYSeries("test")
-    val chart = ChartFactory.createXYLineChart("Trade visualization", "Minutes", "Price", dataset)
-    val plot = chart.xyPlot
+    private val dataset = XYSeriesCollection()
+    private val testSeries = XYSeries("test")
+    private val chart = ChartFactory.createXYLineChart("Trade visualization", "Minutes", "Price", dataset)
+    private val plot = chart.xyPlot
 
-    val dates = ArrayList<Date>()
-    val open = ArrayList<Double>()
-    val high = ArrayList<Double>()
-    val low = ArrayList<Double>()
-    val close = ArrayList<Double>()
+    private val dates = ArrayList<Date>()
+    private val open = ArrayList<Double>()
+    private val high = ArrayList<Double>()
+    private val low = ArrayList<Double>()
+    private val close = ArrayList<Double>()
 
     var currentOpen = 0.0
     var currentHigh = 0.0
@@ -61,30 +68,36 @@ class TraderImpl(override var parameters: TradingParameters) : Trader  {
     var lastWeekTimestamp = 0L
     var lastMonthTimestamp = 0L
 
-    override fun onPriceChange(priceChange: PriceChangeEvent) {
-        val (created, price) = priceChange
-        val createdDouble = created.time.toDouble()
 
+    override fun onTick(tick: TickInfo, metatrader: MT4?) {
+        onPriceChange(PriceChangeEvent(tick.time, tick.bid, tick.ask))
+    }
+
+    override fun onPriceChange(priceChange: PriceChangeEvent) {
+        val (created, bidPrice, askPrice) = priceChange
+        val createdDouble = created.time.toDouble()
 //        updateOHLCData(priceChange)
 
-        indicators.forEach { it.updatePrice(price) }
+        indicators.forEach { it.updatePrice(bidPrice) }
 
-        when (position) {
+        when (tradingEnvironment.getOpenPosition()) {
             Position.NONE -> {
                 val shouldOpen = indicators.map { it.shouldOpen().getTrust(1.0) }.average()
                 val openMarker = ValueMarker(createdDouble)
                 openMarker.paint = Color.BLUE
                 when {
                     shouldOpen > 0.5 -> {
-                        position = Position.BUY
-                        openPrice = price
-                        indicators.forEach { it.notifyOpenTrade(position) }
+//                        position = Position.BUY
+//                        openPrice = price
+                        tradingEnvironment.openPosition(Position.BUY, bidPrice, parameters.stopLoss, parameters.takeProfit)
+                        indicators.forEach { it.notifyOpenTrade(tradingEnvironment.getOpenPosition()) }
                         plot.addDomainMarker(openMarker)
                     }
                     shouldOpen < -0.5 -> {
-                        position = Position.SELL
-                        openPrice = price
-                        indicators.forEach { it.notifyOpenTrade(position) }
+//                        position = Position.SELL
+//                        openPrice = price
+                        tradingEnvironment.openPosition(Position.SELL, askPrice, parameters.stopLoss, parameters.takeProfit)
+                        indicators.forEach { it.notifyOpenTrade(tradingEnvironment.getOpenPosition()) }
                         plot.addDomainMarker(openMarker)
                     }
                 }
@@ -92,16 +105,25 @@ class TraderImpl(override var parameters: TradingParameters) : Trader  {
             Position.BUY, Position.SELL -> {
                 val shouldClose = indicators.map { if (it.shouldClose()) 1 else 0 }.average()
                 if (shouldClose > 0.5) {
-                    val coefficient = updateBalance(price)
-                    position = Position.NONE
-                    val marker = ValueMarker(createdDouble)
-                    marker.paint = if (coefficient >= 1) Color.GREEN else Color.RED
-                    plot.addDomainMarker(marker)
+                    val oldBalance = tradingEnvironment.getBalance()
+                    val newBalance = tradingEnvironment.closePosition(
+                            when (tradingEnvironment.getOpenPosition()) {
+                                Position.BUY -> askPrice
+                                Position.SELL -> bidPrice
+                                else -> throw IllegalStateException("Trading environment does not have any open position or there is an unknown state")
+                            }
+                    )
+                    marketEventsSubject.onNext(MarketEvent.BalanceChange(oldBalance, newBalance))
+//                    val coefficient = updateBalance(price)
+//                    position = Position.NONE
+//                    val marker = ValueMarker(createdDouble)
+//                    marker.paint = if (coefficient >= 1) Color.GREEN else Color.RED
+//                    plot.addDomainMarker(marker)
                     indicators.forEach { it.reset() }
                 }
             }
         }
-        testSeries.add(createdDouble, price)
+        testSeries.add(createdDouble, askPrice.averageWith(bidPrice))
 
         if (priceChange.timestamp.time - lastWeekTimestamp > WEEK_IN_MS) {
             marketEventsSubject.onNext(MarketEvent.NewWeek)
@@ -145,7 +167,7 @@ class TraderImpl(override var parameters: TradingParameters) : Trader  {
     }
 
     override fun getCurrentBalance() : Double {
-        return balance
+        return tradingEnvironment.getBalance()
     }
 
     override fun onMarketClose() {
@@ -157,27 +179,27 @@ class TraderImpl(override var parameters: TradingParameters) : Trader  {
         marketEventsSubject = PublishSubject.create()
     }
 
-    private fun updateBalance(closingPrice: Double) : Double {
-        val oldBalance = balance
-        val coefficient = when (position) {
-            Position.BUY -> closingPrice / openPrice
-            Position.SELL -> openPrice / closingPrice
-            else -> throw RuntimeException("Trying to update balance when no position is open at the moment")
-        } * 0.97
-
-        balance *= coefficient
-        marketEventsSubject.onNext(MarketEvent.BalanceChange(oldBalance, balance))
-        val tradeProfit = (coefficient * 100) - 100
-//        System.out.println("New balance: ${balance.toInt()}\t, closed a trade with  \t \t ${if(tradeProfit>0) "   +" else ""}${"%.3f".format(tradeProfit)}")
-        return coefficient
-    }
+//    private fun updateBalance(closingPrice: Double) : Double {
+//        val oldBalance = balance
+//        val coefficient = when (position) {
+//            Position.BUY -> closingPrice / openPrice
+//            Position.SELL -> openPrice / closingPrice
+//            else -> throw RuntimeException("Trying to update balance when no position is open at the moment")
+//        } * 0.97
+//
+//        balance *= coefficient
+//        marketEventsSubject.onNext(MarketEvent.BalanceChange(oldBalance, balance))
+//        val tradeProfit = (coefficient * 100) - 100
+////        System.out.println("New balance: ${balance.toInt()}\t, closed a trade with  \t \t ${if(tradeProfit>0) "   +" else ""}${"%.3f".format(tradeProfit)}")
+//        return coefficient
+//    }
 
 
     private fun updateOHLCData(priceChange: PriceChangeEvent) {
-        if (firstOpenPrice == 0.0) firstOpenPrice = priceChange.price
+        if (firstOpenPrice == 0.0) firstOpenPrice = priceChange.bid
         if (lastCloseTimestamp == 0L) {
             lastCloseTimestamp = priceChange.timestamp.time
-            currentOpen = priceChange.price
+            currentOpen = priceChange.bid
         }
 
 
@@ -187,14 +209,14 @@ class TraderImpl(override var parameters: TradingParameters) : Trader  {
             open.add(currentOpen)
             high.add(currentHigh)
             low.add(currentLow)
-            close.add(priceChange.price)
+            close.add(priceChange.bid)
 
-            currentOpen = priceChange.price
-            currentHigh = priceChange.price
-            currentLow = priceChange.price
+            currentOpen = priceChange.bid
+            currentHigh = priceChange.bid
+            currentLow = priceChange.bid
         } else {
-            if (currentHigh < priceChange.price) currentHigh = priceChange.price
-            if (currentLow > priceChange.price) currentLow = priceChange.price
+            if (currentHigh < priceChange.bid) currentHigh = priceChange.bid
+            if (currentLow > priceChange.bid) currentLow = priceChange.bid
         }
     }
 

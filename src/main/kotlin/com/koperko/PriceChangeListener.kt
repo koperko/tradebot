@@ -12,4 +12,4 @@ interface PriceChangeListener {
 
 }
 
-data class PriceChangeEvent(val timestamp: Date, val price: Double)
+data class PriceChangeEvent(val timestamp: Date, val bid: Double, val ask: Double)

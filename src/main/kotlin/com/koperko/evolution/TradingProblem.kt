@@ -1,15 +1,14 @@
 package com.koperko.evolution
 
 import com.koperko.*
-import io.jenetics.DoubleChromosome
+import com.koperko.environment.InMemoryEnvironment
+import com.koperko.environment.MarketSymbol
+import com.koperko.evaluator.FinalBalanceEvaluator
 import io.jenetics.DoubleGene
 import io.jenetics.Genotype
 import io.jenetics.engine.Codec
 import io.jenetics.engine.Problem
-import io.jenetics.internal.collection.ArrayMSeq
-import io.jenetics.util.DoubleRange
 import io.jenetics.util.ISeq
-import io.jenetics.util.MSeq
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import java.io.File
@@ -21,11 +20,27 @@ import java.util.function.Function
  */
 class TradingProblem : Problem<ISeq<Double>, DoubleGene, Double> {
 
+
+    private val market = SimulatedMarket(File("src/main/resources/eurusd-mini.csv"))
+
     override fun fitness(): Function<ISeq<Double>, Double> {
+
         return Function { genotype ->
-            val evaluator = WeeklyBalanceEvaluator(SimulatedMarket(File("src/main/resources/bitcoin-lite.csv")), 0.04)
-            val value = evaluator.evaluate(TraderImpl(TradingParameters(genotype)))
+//            val evaluator = WeeklyBalanceEvaluator(market, 0.04)
+            val evaluator = FinalBalanceEvaluator(market)
+            val parameters = TradingParameters(genotype)
+            val indicator = BollingerBandsIndicator(parameters.BBLowerFactor, parameters.BBUpperFactor, parameters.BBLookBackPeriod.toInt(), parameters.stopLoss)
+//            val cachedIndicator = CachedIndicator( //fixme: cache results only to specific parameters, maybe a hashmap?
+//                    indicator,
+//                    CachedIndicator.CachedData(ArrayList(bollingerBandsCachedData.shouldOpen), ArrayList(bollingerBandsCachedData.shouldClose))
+//            )
+            val trader = TraderImpl(
+                    Arrays.asList(indicator),
+                    parameters,
+                    InMemoryEnvironment(MarketSymbol.EURUSD, 10000.0))
+            return@Function evaluator.evaluate(trader)
                     .subscribeOn(Schedulers.computation())
+//                    .doOnSuccess { bollingerBandsCachedData = cachedIndicator.cachedData }
                     .onErrorResumeNext {
                         if (it is NoSuchElementException) {
                             Single.just(0.0)
@@ -34,7 +49,6 @@ class TradingProblem : Problem<ISeq<Double>, DoubleGene, Double> {
                         }
                     }
                     .blockingGet()
-            return@Function value
         }
     }
 

@@ -1,5 +1,8 @@
 package com.koperko
 
+import com.koperko.environment.Position
+import com.koperko.extensions.isInRange
+import com.koperko.extensions.takeLastAsArray
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation
 import org.jfree.data.xy.XYSeries
 import java.util.*
@@ -23,9 +26,9 @@ class BollingerBandsIndicator(private val lowerFactor: Double, private val upper
     private var openTradeIndex: Int = 0
     private var openTradePosition = Position.NONE
 
-    val meanSeries = XYSeries("mean")
-    val upperBandSeries = XYSeries("upper")
-    val lowerBandSeries = XYSeries("lower")
+    private val meanSeries = XYSeries("mean")
+    private val upperBandSeries = XYSeries("upper")
+    private val lowerBandSeries = XYSeries("lower")
 
     override fun shouldOpen(): Position {
         if (historyPoints.size < lookBackPeriod) return Position.NONE
