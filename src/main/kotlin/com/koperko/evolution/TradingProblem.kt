@@ -1,6 +1,9 @@
 package com.koperko.evolution
 
-import com.koperko.*
+import com.koperko.BollingerBandsIndicator
+import com.koperko.SimulatedMarket
+import com.koperko.TraderImpl
+import com.koperko.TradingParameters
 import com.koperko.environment.InMemoryEnvironment
 import com.koperko.environment.MarketSymbol
 import com.koperko.evaluator.FinalBalanceEvaluator
@@ -26,7 +29,7 @@ class TradingProblem : Problem<ISeq<Double>, DoubleGene, Double> {
     override fun fitness(): Function<ISeq<Double>, Double> {
 
         return Function { genotype ->
-//            val evaluator = WeeklyBalanceEvaluator(market, 0.04)
+            //            val evaluator = WeeklyBalanceEvaluator(market, 0.04)
             val evaluator = FinalBalanceEvaluator(market)
             val parameters = TradingParameters(genotype)
             val indicator = BollingerBandsIndicator(parameters.BBLowerFactor, parameters.BBUpperFactor, parameters.BBLookBackPeriod.toInt(), parameters.stopLoss)

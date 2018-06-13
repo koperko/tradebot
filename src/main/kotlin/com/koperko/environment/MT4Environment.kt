@@ -34,7 +34,7 @@ class MT4Environment(override val symbol: MarketSymbol, private val connection: 
 
     override fun getOpenPosition(): Position {
         val orderInfo: OrderInfo? = connection.orderGet(0, SelectionType.SELECT_BY_POS, SelectionPool.MODE_TRADES)
-        return when(orderInfo?.type) {
+        return when (orderInfo?.type) {
             TradeOperation.OP_BUY -> Position.BUY
             TradeOperation.OP_SELL -> Position.SELL
             else -> Position.NONE
@@ -62,7 +62,7 @@ class MT4Environment(override val symbol: MarketSymbol, private val connection: 
         }
     }
 
-    private fun getOpenPrice(position: Position) : Double {
+    private fun getOpenPrice(position: Position): Double {
         return when (position) {
             Position.BUY -> connection.marketInfo(symbol.toString(), MarketInfo.MODE_BID)
             Position.SELL -> connection.marketInfo(symbol.toString(), MarketInfo.MODE_ASK)
@@ -70,7 +70,7 @@ class MT4Environment(override val symbol: MarketSymbol, private val connection: 
         }
     }
 
-    private fun Position.getTradeOperation() : TradeOperation {
+    private fun Position.getTradeOperation(): TradeOperation {
         return when (this) {
             Position.BUY -> TradeOperation.OP_BUY
             Position.SELL -> TradeOperation.OP_SELL

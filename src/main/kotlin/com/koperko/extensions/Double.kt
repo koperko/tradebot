@@ -1,15 +1,14 @@
 package com.koperko.extensions
 
 import java.math.BigDecimal
-import java.util.*
 
 /**
  * Created by Matus on 01.04.2018.
  */
 
-fun Double.averageWith(vararg another: Double) : Double {
+fun Double.averageWith(vararg another: Double): Double {
     return another.plus(this)
-        .average()
+            .average()
 }
 
 fun Double.roundTo(decimalPoints: Int) =

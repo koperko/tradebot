@@ -10,24 +10,10 @@ import com.koperko.environment.InMemoryEnvironment
 import com.koperko.environment.MarketSymbol
 import com.koperko.evolution.TradingProblem
 import io.jenetics.DoubleGene
-import io.jenetics.Optimize
 import io.jenetics.engine.Engine
 import io.jenetics.engine.EvolutionResult
 import io.jenetics.engine.EvolutionStatistics
-import io.jenetics.engine.Limits
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVParser
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation
-import org.jfree.chart.ChartFactory
-import org.jfree.chart.ChartUtilities
-import org.jfree.chart.plot.ValueMarker
-import org.jfree.data.time.ohlc.OHLCSeries
-import org.jfree.data.xy.DefaultHighLowDataset
-import org.jfree.data.xy.XYSeries
-import org.jfree.data.xy.XYSeriesCollection
-import java.awt.Color
 import java.io.File
-import java.io.FileReader
 import java.util.*
 
 fun runEvolution() {
@@ -50,7 +36,7 @@ fun runEvolution() {
 }
 
 fun runSingleTrader() {
-        val market: Market = SimulatedMarket(File("src/main/resources/bitcoin-lite.csv"))
+    val market: Market = SimulatedMarket(File("src/main/resources/bitcoin-lite.csv"))
     val parameters = TradingParameters(0.04299748953891125, 0.04299748953891125, 0.17878435004074766, 27.725265442748604, 0.0054511954340837115)
     val indicators = Arrays.asList(BollingerBandsIndicator(parameters.BBLowerFactor, parameters.BBUpperFactor, parameters.BBLookBackPeriod.toInt(), parameters.stopLoss))
     val trader = TraderImpl(indicators, parameters, InMemoryEnvironment(MarketSymbol.EURUSD, 10000.0))

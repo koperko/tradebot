@@ -2,16 +2,13 @@ package com.koperko
 
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
-import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
 import java.io.File
 import java.io.FileReader
-import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.*
 
 /**
  * Created by Matus on 20.03.2018.

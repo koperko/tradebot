@@ -1,6 +1,5 @@
 package com.koperko
 
-import com.jfx.Broker
 import com.jfx.MarketInfo
 import com.jfx.strategy.Strategy
 import com.koperko.environment.MT4Environment

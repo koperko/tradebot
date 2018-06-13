@@ -10,16 +10,11 @@ import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import org.jfree.chart.ChartFactory
-import org.jfree.chart.ChartUtilities
 import org.jfree.chart.plot.ValueMarker
-import org.jfree.data.xy.DefaultHighLowDataset
 import org.jfree.data.xy.XYSeries
 import org.jfree.data.xy.XYSeriesCollection
 import java.awt.Color
-import java.io.File
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.Date
+import java.util.*
 
 
 /**
@@ -27,7 +22,7 @@ import java.util.Date
  */
 
 class TraderImpl(override var indicators: List<Indicator>, override var parameters: TradingParameters,
-                 private val tradingEnvironment: TradingEnvironment) : Trader, Strategy.TickListener  {
+                 private val tradingEnvironment: TradingEnvironment) : Trader, Strategy.TickListener {
 
     companion object {
         const val CANDLE_PERIOD_MS = 24 * 60 * 60 * 1000L

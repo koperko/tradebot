@@ -1,7 +1,6 @@
 package com.koperko.evolution
 
 import io.jenetics.DoubleChromosome
-import io.jenetics.DoubleGene
 import io.jenetics.util.ISeq
 
 /**

@@ -1,5 +1,6 @@
-package com.koperko
+package com.koperko.evaluator
 
+import com.koperko.Trader
 import io.reactivex.Single
 
 /**
