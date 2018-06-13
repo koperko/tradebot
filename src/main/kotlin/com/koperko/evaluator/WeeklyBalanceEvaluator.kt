@@ -15,14 +15,14 @@ class WeeklyBalanceEvaluator(private val market: Market, private val weeklyThres
                 .toFlowable(BackpressureStrategy.BUFFER)
                 .filter { it is MarketEvent.BalanceChange || it === MarketEvent.NewWeek }
                 .compose(FlowableTransformers.bufferSplit<MarketEvent> { event -> event === MarketEvent.NewWeek })
-//                .map {
-//                    when {
-//                        computeWeeksProfit(it) >= weeklyThreshold -> 1
-//                        computeWeeksProfit(it) > 0 -> 0
-//                        else -> -1
-//                    }
-//                }
-                .map { computeWeeksProfit(it) }
+                .map {
+                    val weeksProfit = computeWeeksProfit(it)
+                    when {
+                        weeksProfit >= weeklyThreshold -> 1.0
+                        else -> weeksProfit / weeklyThreshold
+                    }
+                }
+//                .map { computeWeeksProfit(it) }
                 .toList()
                 .map { if (it.size > 0) it.average() else -1000.0}
     }

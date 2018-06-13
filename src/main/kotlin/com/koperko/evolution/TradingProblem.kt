@@ -6,7 +6,7 @@ import com.koperko.TraderImpl
 import com.koperko.TradingParameters
 import com.koperko.environment.InMemoryEnvironment
 import com.koperko.environment.MarketSymbol
-import com.koperko.evaluator.FinalBalanceEvaluator
+import com.koperko.evaluator.WeeklyBalanceEvaluator
 import io.jenetics.DoubleGene
 import io.jenetics.Genotype
 import io.jenetics.engine.Codec
@@ -24,13 +24,13 @@ import java.util.function.Function
 class TradingProblem : Problem<ISeq<Double>, DoubleGene, Double> {
 
 
-    private val market = SimulatedMarket(File("src/main/resources/eurusd-mini.csv"))
+    private val market = SimulatedMarket(File("src/main/resources/eurusd-mini2.csv"))
 
     override fun fitness(): Function<ISeq<Double>, Double> {
 
         return Function { genotype ->
-            //            val evaluator = WeeklyBalanceEvaluator(market, 0.04)
-            val evaluator = FinalBalanceEvaluator(market)
+            val evaluator = WeeklyBalanceEvaluator(market, 0.01)
+//            val evaluator = FinalBalanceEvaluator(market)
             val parameters = TradingParameters(genotype)
             val indicator = BollingerBandsIndicator(parameters.BBLowerFactor, parameters.BBUpperFactor, parameters.BBLookBackPeriod.toInt(), parameters.stopLoss)
 //            val cachedIndicator = CachedIndicator( //fixme: cache results only to specific parameters, maybe a hashmap?
@@ -60,7 +60,7 @@ class TradingProblem : Problem<ISeq<Double>, DoubleGene, Double> {
         return Codec.of(
                 Genotype.of(chromosomeFactory.getOrderedChromosomes()),
                 Function { gt ->
-//                    gt.chromosome.toSeq().map { it.allele }
+                    //                    gt.chromosome.toSeq().map { it.allele }
                     gt.toSeq().map { it.gene.allele }
                 }
         )
