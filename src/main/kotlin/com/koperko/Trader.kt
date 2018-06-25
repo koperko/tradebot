@@ -1,5 +1,6 @@
 package com.koperko
 
+import com.koperko.market.Market
 import io.jenetics.util.ISeq
 import io.reactivex.Observable
 

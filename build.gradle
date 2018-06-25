@@ -43,6 +43,9 @@ dependencies {
     compile "ch.qos.logback:logback-classic:1.2.1"
     compile "com.github.akarnokd:rxjava2-extensions:0.18.9"
     compile files('lib/jfx-2.7.7.jar')
+
+    compile "com.oanda.v20:v20:3.0.24"
+
     compile group: 'io.jenetics', name: 'jenetics', version: '4.1.0'
     compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.1.10'
     compile group: 'org.apache.commons', name: 'commons-csv', version: '1.1'

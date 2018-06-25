@@ -6,6 +6,7 @@ import com.jfx.strategy.Strategy
 import com.koperko.environment.Position
 import com.koperko.environment.TradingEnvironment
 import com.koperko.extensions.averageWith
+import com.koperko.market.Market
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
@@ -78,22 +79,17 @@ class TraderImpl(override var indicators: List<Indicator>, override var paramete
         when (tradingEnvironment.getOpenPosition()) {
             Position.NONE -> {
                 val shouldOpen = indicators.map { it.shouldOpen().getTrust(1.0) }.average()
-                val openMarker = ValueMarker(createdDouble)
-                openMarker.paint = Color.BLUE
                 when {
                     shouldOpen > 0.5 -> {
 //                        position = Position.BUY
 //                        openPrice = price
-                        tradingEnvironment.openPosition(Position.BUY, bidPrice, parameters.stopLoss, parameters.takeProfit)
-                        indicators.forEach { it.notifyOpenTrade(tradingEnvironment.getOpenPosition()) }
-                        plot.addDomainMarker(openMarker)
+                        openPosition(Position.BUY, askPrice, created)
+
                     }
                     shouldOpen < -0.5 -> {
 //                        position = Position.SELL
 //                        openPrice = price
-                        tradingEnvironment.openPosition(Position.SELL, askPrice, parameters.stopLoss, parameters.takeProfit)
-                        indicators.forEach { it.notifyOpenTrade(tradingEnvironment.getOpenPosition()) }
-                        plot.addDomainMarker(openMarker)
+                        openPosition(Position.SELL, bidPrice, created)
                     }
                 }
             }
@@ -189,6 +185,16 @@ class TraderImpl(override var indicators: List<Indicator>, override var paramete
 //        return coefficient
 //    }
 
+    private fun openPosition(position: Position, openingPrice: Double, created: Date) {
+        val openMarker = ValueMarker(created.time.toDouble())
+        openMarker.paint = Color.BLUE
+
+        tradingEnvironment.openPosition(position, openingPrice, parameters.stopLoss, parameters.takeProfit)
+        indicators.forEach { it.notifyOpenTrade(tradingEnvironment.getOpenPosition()) }
+        plot.addDomainMarker(openMarker)
+
+//        System.out.println("Opening ${position.name} at $created with price $openingPrice")
+    }
 
     private fun updateOHLCData(priceChange: PriceChangeEvent) {
         if (firstOpenPrice == 0.0) firstOpenPrice = priceChange.bid

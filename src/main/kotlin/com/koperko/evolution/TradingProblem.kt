@@ -1,12 +1,12 @@
 package com.koperko.evolution
 
 import com.koperko.BollingerBandsIndicator
-import com.koperko.SimulatedMarket
 import com.koperko.TraderImpl
 import com.koperko.TradingParameters
 import com.koperko.environment.InMemoryEnvironment
 import com.koperko.environment.MarketSymbol
 import com.koperko.evaluator.WeeklyBalanceEvaluator
+import com.koperko.market.SimulatedMarket
 import io.jenetics.DoubleGene
 import io.jenetics.Genotype
 import io.jenetics.engine.Codec
@@ -24,7 +24,7 @@ import java.util.function.Function
 class TradingProblem : Problem<ISeq<Double>, DoubleGene, Double> {
 
 
-    private val market = SimulatedMarket(File("src/main/resources/eurusd-mini2.csv"))
+    private val market = SimulatedMarket(File("src/main/resources/eurusd-2015-mini.csv"))
 
     override fun fitness(): Function<ISeq<Double>, Double> {
 

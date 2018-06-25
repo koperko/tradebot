@@ -1,8 +1,8 @@
 package com.koperko.evaluator
 
-import com.koperko.Market
 import com.koperko.MarketEvent
 import com.koperko.Trader
+import com.koperko.market.Market
 import hu.akarnokd.rxjava2.operators.FlowableTransformers
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Single

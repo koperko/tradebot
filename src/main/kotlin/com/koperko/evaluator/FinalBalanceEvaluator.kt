@@ -1,8 +1,8 @@
 package com.koperko.evaluator
 
-import com.koperko.Market
 import com.koperko.MarketEvent
 import com.koperko.Trader
+import com.koperko.market.Market
 import io.reactivex.Single
 
 class FinalBalanceEvaluator(private val market: Market) : CachingEvaluator() {

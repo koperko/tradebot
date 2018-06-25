@@ -1,5 +1,7 @@
-package com.koperko
+package com.koperko.market
 
+import com.koperko.PriceChangeEvent
+import com.koperko.PriceChangeListener
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -24,7 +26,9 @@ class SimulatedMarket(val csvFile: File) : Market {
     }
 
     private fun createDataObservable() : Observable<PriceChangeEvent> {
-        if (data == null) data = CSVParser(FileReader(csvFile), CSVFormat.DEFAULT).records
+        if (data == null) {
+            data = CSVParser(FileReader(csvFile), CSVFormat.DEFAULT).records // todo: add synchronized block for CSV parsing, computation is paralleled and at the start, whole population is trying to parse the file
+        }
         val formatter = SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS")
         return Observable.fromIterable(data)
 //                .map { PriceChangeEvent(Date(it[0].toLong() * 1000), it[4].toDouble(), it[4].toDouble()) }
