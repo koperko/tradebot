@@ -43,7 +43,7 @@ fun runSingleTrader() {
     val market: Market = SimulatedMarket(File("src/main/resources/eurusd-2015-mini.csv"))
 //    val parameters = TradingParameters(0.04299748953891125, 0.04299748953891125, 0.17878435004074766, 27.725265442748604, 0.0054511954340837115)
 //    val parameters = TradingParameters(0.033892554726637096, 0.05591689815067605, 1.685870747233853, 2.5763840292468037, 370.33698098456443)
-    val parameters = TradingParameters(0.0137756595607479, 0.042841892379461656, 2.5526036710316236, 2.082400728400062, 25.374658459606756) // 2015 year training
+    val parameters = TradingParameters(0.06036718720554109, 0.003131477609432154, 1.7553265172528825, 0.045952899326520136, 84.24036703564275) // 2015 year training
     val indicators = Arrays.asList(BollingerBandsIndicator(parameters.BBLowerFactor, parameters.BBUpperFactor, parameters.BBLookBackPeriod.toInt(), parameters.stopLoss))
     val trader = TraderImpl(indicators, parameters, InMemoryEnvironment(MarketSymbol.EURUSD, 10000.0))
 //
@@ -68,7 +68,7 @@ fun runOnOanda() {
     val market: Market = OandaMarket(OandaEnvironment.DEMO_ACCOUNT)
 //    val parameters = TradingParameters(0.04299748953891125, 0.04299748953891125, 0.17878435004074766, 27.725265442748604, 0.0054511954340837115)
 //    val parameters = TradingParameters(0.033892554726637096, 0.05591689815067605, 1.685870747233853, 2.5763840292468037, 370.33698098456443)
-    val parameters = TradingParameters(0.0137756595607479, 0.042841892379461656, 2.5526036710316236, 2.082400728400062, 25.374658459606756) // 2015 year training
+    val parameters = TradingParameters(0.06036718720554109, 0.003131477609432154, 1.7553265172528825, 0.045952899326520136, 84.24036703564275) // 2015 year training
     val indicators = Arrays.asList(BollingerBandsIndicator(parameters.BBLowerFactor, parameters.BBUpperFactor, parameters.BBLookBackPeriod.toInt(), parameters.stopLoss))
     val environment = OandaEnvironment(MarketSymbol.EURUSD, OandaEnvironment.DEMO_ACCOUNT)
     val trader = TraderImpl(indicators, parameters, environment)
@@ -115,8 +115,8 @@ fun runWithMT4() {
 
 fun main(args: Array<String>) {
 
-    runEvolution()
-//    runSingleTrader()
+//    runEvolution()
+    runSingleTrader()
 //    runOnOanda()
 
 }
