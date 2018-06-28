@@ -15,6 +15,8 @@ buildscript {
 
 apply plugin: 'java'
 apply plugin: 'kotlin'
+apply plugin: 'application'
+mainClassName = 'com.koperko.TestingKt'
 
 sourceCompatibility = 1.8
 compileKotlin {
@@ -55,3 +57,14 @@ dependencies {
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
+//
+//jar {
+//    manifest {
+//        attributes 'Main-Class': 'com.koperko.TestingKt'
+//    }
+//
+//    // This line of code recursively collects and copies all of a project's files
+//    // and adds them to the JAR itself. One can extend this task, to skip certain
+//    // files or particular types at will
+//    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+//}

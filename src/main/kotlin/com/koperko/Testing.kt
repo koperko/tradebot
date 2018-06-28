@@ -20,17 +20,17 @@ import io.jenetics.engine.EvolutionStatistics
 import java.io.File
 import java.util.*
 
-fun runEvolution() {
-    val engine = Engine.builder(TradingProblem())
+fun runEvolution(datasetFilePath: String) {
+    val engine = Engine.builder(TradingProblem(datasetFilePath))
             .maximizing()
-            .populationSize(10)
+            .populationSize(30)
             .build()
 
     val statistics = EvolutionStatistics.ofNumber<Double>()
 
     val best = engine
 //            .limit(Limits.byStea<Double>(25))
-            .limit(50)
+            .limit(100)
             .stream()
             .peek(statistics)
             .peek { System.out.println("Best trader in generation ${it.generation} balance: ${"%.4f".format(it.bestFitness)} \t at ${Date()} \t (${it.bestPhenotype.genotype}") }
@@ -114,9 +114,12 @@ fun runWithMT4() {
 }
 
 fun main(args: Array<String>) {
-
-//    runEvolution()
-    runSingleTrader()
+    if (args.isEmpty()) {
+        runEvolution("src/main/resources/eurusd-2015-mini.csv")
+    } else {
+        runEvolution(args.first())
+    }
+//    runSingleTrader()
 //    runOnOanda()
 
 }

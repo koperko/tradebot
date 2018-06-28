@@ -21,10 +21,10 @@ import java.util.function.Function
 /**
  * Created by Matus on 22.03.2018.
  */
-class TradingProblem : Problem<ISeq<Double>, DoubleGene, Double> {
+class TradingProblem(datasetFilePath: String) : Problem<ISeq<Double>, DoubleGene, Double> {
 
 
-    private val market = SimulatedMarket(File("src/main/resources/eurusd-2015-mini.csv"))
+    private val market = SimulatedMarket(File(datasetFilePath))
 
     override fun fitness(): Function<ISeq<Double>, Double> {
 
