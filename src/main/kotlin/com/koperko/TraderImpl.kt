@@ -1,8 +1,5 @@
 package com.koperko
 
-import com.jfx.MT4
-import com.jfx.TickInfo
-import com.jfx.strategy.Strategy
 import com.koperko.environment.Position
 import com.koperko.environment.TradingEnvironment
 import com.koperko.extensions.averageWith
@@ -23,7 +20,7 @@ import java.util.*
  */
 
 class TraderImpl(override var indicators: List<Indicator>, override var parameters: TradingParameters,
-                 private val tradingEnvironment: TradingEnvironment) : Trader, Strategy.TickListener {
+                 private val tradingEnvironment: TradingEnvironment) : Trader {
 
     companion object {
         const val CANDLE_PERIOD_MS = 24 * 60 * 60 * 1000L
@@ -65,9 +62,9 @@ class TraderImpl(override var indicators: List<Indicator>, override var paramete
     var lastMonthTimestamp = 0L
 
 
-    override fun onTick(tick: TickInfo, metatrader: MT4?) {
-        onPriceChange(PriceChangeEvent(tick.time, tick.bid, tick.ask))
-    }
+//    override fun onTick(tick: TickInfo, metatrader: MT4?) {
+//        onPriceChange(PriceChangeEvent(tick.time, tick.bid, tick.ask))
+//    }
 
     override fun onPriceChange(priceChange: PriceChangeEvent) {
         val (created, bidPrice, askPrice) = priceChange

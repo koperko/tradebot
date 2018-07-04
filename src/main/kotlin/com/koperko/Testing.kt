@@ -1,11 +1,5 @@
 package com.koperko
 
-import com.jfx.Broker
-import com.jfx.net.JFXServer
-import com.jfx.strategy.PositionChangeInfo
-import com.jfx.strategy.PositionInfo
-import com.jfx.strategy.PositionListener
-import com.jfx.strategy.Strategy
 import com.koperko.environment.InMemoryEnvironment
 import com.koperko.environment.MarketSymbol
 import com.koperko.environment.OandaEnvironment
@@ -23,7 +17,7 @@ import java.util.*
 fun runEvolution(datasetFilePath: String) {
     val engine = Engine.builder(TradingProblem(datasetFilePath))
             .maximizing()
-            .populationSize(30)
+            .populationSize(3)
             .build()
 
     val statistics = EvolutionStatistics.ofNumber<Double>()
@@ -90,32 +84,10 @@ fun runOnOanda() {
 
 }
 
-fun runWithMT4() {
-    val parameters = TradingParameters(0.04299748953891125, 0.04299748953891125, 0.17878435004074766, 27.725265442748604, 0.0054511954340837115)
-    val indicators = Arrays.asList(BollingerBandsIndicator(parameters.BBLowerFactor, parameters.BBUpperFactor, parameters.BBLookBackPeriod.toInt(), parameters.stopLoss))
-    val trader = TraderImpl(indicators, parameters, InMemoryEnvironment(MarketSymbol.EURUSD, 10000.0))
-
-    val broker = Broker("FxPro.com-Demo05")
-    val user = "8227627"
-    val password = "p3Fa6Vn3"
-
-    val strategy = Strategy()
-    strategy.isReconnect = true
-
-    strategy.addTickListener("EURUSD", trader)
-            .withDedicatedInstrumentOrdersWorker("EURUSD")
-//            .setPositionListener(MyPositionListener(), 1000, 1000)
-            .connect("127.0.0.1", 7788, broker, user, password)
-
-    JFXServer.getInstance()
-    println(JFXServer.getInstance().bindHost + ":" + JFXServer.getInstance().bindPort)
-
-    Thread.sleep(Long.MAX_VALUE)
-}
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
-        runEvolution("src/main/resources/eurusd-2015-mini.csv")
+        runEvolution("src/main/resources/eurusd-2012-mini.csv")
     } else {
         runEvolution(args.first())
     }
@@ -124,15 +96,3 @@ fun main(args: Array<String>) {
 
 }
 
-
-class MyPositionListener : PositionListener {
-
-    override fun onInit(p0: PositionInfo?) {
-        System.out.println(p0.toString())
-    }
-
-    override fun onChange(p0: PositionInfo?, p1: PositionChangeInfo?) {
-        System.out.println(p0.toString())
-    }
-
-}
